@@ -5,7 +5,7 @@ using namespace std;
 template<class T, int Order>
 struct Node {
     //Node *Parent;
-    int NumbersOfKeys; //number of the actual keys
+    int NumbersOfKeys; // 节点中关键字的实际个数
     int position = -1; //to allocate value in the appropriate place
     // key数组, 最多有 Order 个 Keys, T 表示是 Value类型的数组
     T keys[Order];
@@ -246,7 +246,7 @@ int Node<T, Order>::Remove(T value) {
         }
     }
     // 如果删除之后的节点的个数大于等于 ceil(Order/2)-1, 直接删除, 不做其余操作
-    if (this->childs[0] == nullptr || this->NumbersOfKeys >= ceil(Order / 2.0) - 1) {
+    if (this->NumbersOfKeys >= ceil(Order / 2.0) - 1) {
         return 0;
     }
     else {
