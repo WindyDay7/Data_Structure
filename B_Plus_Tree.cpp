@@ -7,12 +7,13 @@ struct Node {
     //Node *Parent;
     int NumbersOfKeys; // 节点中关键字的实际个数
     int position = -1; //to allocate value in the appropriate place
+    bool leaf_node; // 是否是叶子节点
     // key数组, 最多有 Order 个 Keys, T 表示是 Value类型的数组
     T keys[Order];
     // 子节点数组, 最多有 Order 个子节点
     Node* childs[Order + 1];
 
-    Node();
+    Node(bool leaf_node);
     int Insert(T value);
     int Remove(T value);
     Node* split(Node* node, T* value);
@@ -25,7 +26,7 @@ struct Node {
 
 //Node implementation
 template <class T, int Order>
-Node<T, Order>::Node() : NumbersOfKeys(0) {
+Node<T, Order>::Node(bool leaf_node) : NumbersOfKeys(0), leaf_node(leaf_node) {
     for (int i = 0; i <= Order; ++i) {
         childs[i] = nullptr;
     }
@@ -35,19 +36,17 @@ template <class T, int Order>
 Node<T, Order>::~Node() {
     for (int i = this->NumbersOfKeys; i >= 0; i--) {
         if (childs[i] != nullptr) {
-            // cout << childs[i]->NumbersOfKeys << endl;
             delete childs[i];
             childs[i] = nullptr;
         }
     }
-    // cout << this->NumbersOfKeys << endl;
 }
 
 
 template <class T, int Order>
 int Node<T, Order>::Insert(T value) {
     //if the node is leaf, 如果该节点是叶子节点
-    if (this->childs[0] == nullptr) {
+    if (this->leaf_node) {
         // position 位置修改, 记录Value
         this->keys[++this->position] = value;
         ++this->NumbersOfKeys;
@@ -56,15 +55,15 @@ int Node<T, Order>::Insert(T value) {
             if (this->keys[i] < this->keys[i - 1]) std::swap(this->keys[i], this->keys[i - 1]);
         }
     }
-    //if the node is not leaf
+    // 如果是非叶子节点
     else {
-        // count to get place of child to put the value in it
+        // 找到Key的位置, 将其放入到节点中
         int i = 0;
         // 找到插入的位置, 找到包含value范围的Key
-        for (; i < this->NumbersOfKeys && value > this->keys[i];) {
+        while (i < this->NumbersOfKeys && value > this->keys[i]) {
             i++;
         }
-        // Check if the child is full to split it, 递归的向下, 在对应的位置插入节点
+        // 递归的向下, 在对应的位置插入节点
         int check = this->childs[i]->Insert(value);
         // if node full, 回溯判断节点是否满了, 如果满了向上分裂节点
         if (check) {
@@ -73,7 +72,7 @@ int Node<T, Order>::Insert(T value) {
             int TEMP = i;
             Node<T, Order>* newNode = split(this->childs[i], &mid); //Splitted Node to store the values and child that greater than the midValue
             //allocate midValue in correct place, 为向上一层的Value分配正确的位置
-            for (; i < this->NumbersOfKeys && mid > this->keys[i];) {
+            while (i < this->NumbersOfKeys && mid > this->keys[i]) {
                 i++;
             }
             // 将第i个后面的键值对向后移动一位
@@ -101,28 +100,39 @@ template <class T, int Order>
 Node<T, Order>* Node<T, Order>::split(Node* node, T* med) //mid to store value of mid and use it in insert func
 {
     int NumberOfKeys = node->NumbersOfKeys;
-    Node<T, Order>* newNode = new Node<T, Order>();
-    //Node<T,Order> *newParentNode = new Node<T,Order>(order);
+    Node<T,Order> *newNode = nullptr;
     int midValue = NumberOfKeys / 2;
+    // 返回med的值, 上移到父节点
     *med = node->keys[midValue];
-    int i;
+    int node_pos;
+    // 如果是叶子节点分裂, 那么中间节点需要拷贝到新建的右节点中
+    if(node->leaf_node) {
+        newNode = new Node<T, Order>(true);
+        node_pos = midValue;
+    }
+    else {
+        newNode = new Node<T, Order>(false);
+        node_pos = midValue+1;
+    }
     //take the values after mid value
-    for (i = midValue + 1; i < NumberOfKeys; ++i)
-    {
-        newNode->keys[++newNode->position] = node->keys[i];
-        newNode->childs[newNode->position] = node->childs[i];
+    while (node_pos<NumberOfKeys) {
+        newNode->keys[++newNode->position] = node->keys[node_pos];
+        newNode->childs[newNode->position] = node->childs[node_pos];
         ++newNode->NumbersOfKeys;
         --node->position;
         --node->NumbersOfKeys;
-        node->keys[i] = 0;
-        node->childs[i] = nullptr;
+        node->keys[node_pos] = 0;
+        node->childs[node_pos] = nullptr;
+        node_pos++;
     }
     // 孩子节点的个数要比Key的个数多一个
-    newNode->childs[newNode->position + 1] = node->childs[i];
-    node->childs[i] = nullptr;
-
-    --node->NumbersOfKeys; //because we take mid value...
-    --node->position;
+    newNode->childs[newNode->position + 1] = node->childs[node_pos];
+    node->childs[node_pos] = nullptr;
+    // 如果是中间节点分裂, 节点向上移动, 这一层减少一个节点
+    if(!node->leaf_node) {
+        --node->NumbersOfKeys; //because we take mid value...
+        --node->position;
+    }
     return newNode;
 }
 
