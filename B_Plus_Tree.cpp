@@ -36,7 +36,9 @@ template <class T, int Order>
 Node<T, Order>::~Node() {
     for (int i = this->NumbersOfKeys; i >= 0; i--) {
         if (childs[i] != nullptr) {
-            delete childs[i];
+            if (!this->leaf_node) {
+                delete childs[i];
+            }
             childs[i] = nullptr;
         }
     }
@@ -82,8 +84,7 @@ int Node<T, Order>::Insert(T value) {
 
             ++this->NumbersOfKeys;
             ++this->position;
-
-            //allocate newNode Splitted in the correct place
+            // 将所有的节点向后移动一位
             int k;
             for (k = this->NumbersOfKeys; k > TEMP + 1; k--)
                 this->childs[k] = this->childs[k - 1];
@@ -132,6 +133,10 @@ Node<T, Order>* Node<T, Order>::split(Node* node, T* med) //mid to store value o
     if(!node->leaf_node) {
         --node->NumbersOfKeys; //because we take mid value...
         --node->position;
+    }
+    else {
+        // 如果是叶子节点分裂, 将左节点的最后一个孩子的指针指向右节点
+        node->childs[Order] = newNode;
     }
     return newNode;
 }
@@ -183,47 +188,81 @@ int Node<T, Order>::Remove(T value) {
             // 如果返回的不是 0 也不是 -1, 那就是 -2, 此时, 需要调整
             // 如果存在兄弟节点的关键字的个数大于 ceil(Order/2)-1, 
             if (node_pos > 0 && this->childs[node_pos - 1]->NumbersOfKeys > ceil(Order / 2.0) - 1) {
-                // 向左边兄弟节点借一个key, 父节点的Key下移到当前节点, 左兄弟节点的最后一个元素给父节点
+                // 向左边兄弟节点借一个key, 当前节点全部后移一位
                 int temp_pos = this->childs[node_pos]->position;
                 this->childs[node_pos]->childs[temp_pos + 1] = this->childs[node_pos]->childs[temp_pos];
                 for (int i = temp_pos; i > 0; i--) {
                     this->childs[node_pos]->keys[i] = this->childs[node_pos]->keys[i - 1];
                     this->childs[node_pos]->childs[i] = this->childs[node_pos]->childs[i - 1];
                 }
-                // 父节点下移动到当前节点的头部
-                this->childs[node_pos]->keys[0] = this->keys[node_pos];
-                this->childs[node_pos]->position++;
-                this->childs[node_pos]->NumbersOfKeys++;
-                // 将左兄弟节点的最后一个元素给父节点
-                int left_end_pos = this->childs[node_pos - 1]->position;
-                this->keys[node_pos] = this->childs[node_pos - 1]->keys[left_end_pos];
-                // 将左节点的最后一个子节点移动到当前节点的第一个节点
-                this->childs[node_pos]->childs[0] = this->childs[node_pos - 1]->childs[left_end_pos + 1];
-                // 左节点的最后一个节点删除
-                this->childs[node_pos - 1]->childs[left_end_pos + 1] = nullptr;
-                this->childs[node_pos - 1]->position--;
-                this->childs[node_pos - 1]->NumbersOfKeys--;
+                // 如果是叶子节点, 左节点最后一个关键字移动到当前节点的开头位置
+                if(this->childs[node_pos]->leaf_node) {
+                    int left_end_pos = this->childs[node_pos - 1]->position;
+                    this->childs[node_pos]->keys[0] = this->childs[node_pos - 1]->keys[left_end_pos];
+                    this->childs[node_pos]->position++;
+                    this->childs[node_pos]->NumbersOfKeys++;
+                    // 父节点的关键字替换为左兄弟节点的最后一个关键字
+                    this->keys[node_pos] = this->childs[node_pos - 1]->keys[left_end_pos];
+                    // 左节点最后一个关键字删除
+                    this->childs[node_pos - 1]->keys[left_end_pos + 1] = 0;
+                    this->childs[node_pos - 1]->position--;
+                    this->childs[node_pos - 1]->NumbersOfKeys--;
+                }
+                else {
+                    // 父节点关键字下移动到当前节点的头部
+                    this->childs[node_pos]->keys[0] = this->keys[node_pos];
+                    this->childs[node_pos]->position++;
+                    this->childs[node_pos]->NumbersOfKeys++;
+                    // 将左兄弟节点的最后一个元素给父节点
+                    int left_end_pos = this->childs[node_pos - 1]->position;
+                    this->keys[node_pos] = this->childs[node_pos - 1]->keys[left_end_pos];
+                    // 将左节点的最后一个子节点移动到当前节点的第一个节点
+                    this->childs[node_pos]->childs[0] = this->childs[node_pos - 1]->childs[left_end_pos + 1];
+                    // 左节点的最后一个节点删除
+                    this->childs[node_pos - 1]->childs[left_end_pos + 1] = nullptr;
+                    this->childs[node_pos - 1]->position--;
+                    this->childs[node_pos - 1]->NumbersOfKeys--;
+                }
             }
             else if (node_pos < this->NumbersOfKeys && this->childs[node_pos + 1]->NumbersOfKeys > ceil(Order / 2.0) - 1) {
-                // 如果向右兄弟节点借一个关键字, 父节点的Key下移动到当前节点最后
-                this->childs[node_pos]->NumbersOfKeys++;
-                this->childs[node_pos]->position++;
-                this->childs[node_pos]->keys[this->childs[node_pos]->position] = this->keys[node_pos];
-                // 右兄弟节点的第一个节点向上移动, 移动到父节点
-                this->keys[node_pos] = this->childs[node_pos + 1]->keys[0];
-                // 将右兄弟节点的第一个孩子节点移动到当前节点的最后一个节点
-                this->childs[node_pos]->childs[position + 1] = this->childs[node_pos + 1]->childs[0];
-                // 右节点第一个Key与节点被删除, 后面节点向前移动一位
-                for (int i = 0; i < this->childs[node_pos + 1]->position; i++) {
-                    this->childs[node_pos + 1]->keys[i] = this->childs[node_pos + 1]->keys[i + 1];
-                    this->childs[node_pos + 1]->childs[i] = this->childs[node_pos + 1]->childs[i + 1];
+                // 如果是叶子节点删除后需要借右兄弟节点的关键字
+                if(this->childs[node_pos]->leaf_node) {
+                    this->childs[node_pos]->NumbersOfKeys++;
+                    this->childs[node_pos]->position++;
+                    int left_end_pos = this->childs[node_pos]->position;
+                    // 将右兄弟节点的第一个关键字移动到当前节点
+                    this->childs[node_pos]->keys[left_end_pos] = this->childs[node_pos + 1]->keys[0];
+                    // 将右兄弟节点的所有关键字向前移动一位, 因为第一个关键字被删除
+                    for (int i = 0; i < this->childs[node_pos + 1]->position; i++) {
+                        this->childs[node_pos + 1]->keys[i] = this->childs[node_pos + 1]->keys[i + 1];
+                    }
+                    this->childs[node_pos + 1]->position--;
+                    this->childs[node_pos + 1]->NumbersOfKeys--;
+                    // 父节点的关键字替换为右兄弟节点的第一个关键字
+                    this->keys[node_pos] = this->childs[node_pos + 1]->keys[0];
                 }
-                // 最后还要移动最后一位
-                int temp_pos = this->childs[node_pos + 1]->position;
-                this->childs[node_pos + 1]->childs[temp_pos] = this->childs[node_pos + 1]->childs[temp_pos + 1];
-                this->childs[node_pos + 1]->childs[temp_pos + 1] = nullptr;
-                this->childs[node_pos + 1]->position--;
-                this->childs[node_pos + 1]->NumbersOfKeys--;
+                else {
+                    // 如果向右兄弟节点借一个关键字, 父节点的Key下移动到当前节点最后
+                    this->childs[node_pos]->NumbersOfKeys++;
+                    this->childs[node_pos]->position++;
+                    int left_end_pos = this->childs[node_pos]->position;
+                    this->childs[node_pos]->keys[left_end_pos] = this->keys[node_pos];
+                    // 右兄弟节点的第一个节点向上移动, 移动到父节点
+                    this->keys[node_pos] = this->childs[node_pos + 1]->keys[0];
+                    // 将右兄弟节点的第一个孩子节点移动到当前节点的最后一个节点
+                    this->childs[node_pos]->childs[left_end_pos + 1] = this->childs[node_pos + 1]->childs[0];
+                    // 右节点第一个Key与节点被删除, 后面节点向前移动一位
+                    for (int i = 0; i < this->childs[node_pos + 1]->position; i++) {
+                        this->childs[node_pos + 1]->keys[i] = this->childs[node_pos + 1]->keys[i + 1];
+                        this->childs[node_pos + 1]->childs[i] = this->childs[node_pos + 1]->childs[i + 1];
+                    }
+                    // 最后还要移动最后一位
+                    int temp_pos = this->childs[node_pos + 1]->position;
+                    this->childs[node_pos + 1]->childs[temp_pos] = this->childs[node_pos + 1]->childs[temp_pos + 1];
+                    this->childs[node_pos + 1]->childs[temp_pos + 1] = nullptr;
+                    this->childs[node_pos + 1]->position--;
+                    this->childs[node_pos + 1]->NumbersOfKeys--;
+                }
             }
             else {
                 // 如果两个兄弟节点的关键字的个数也都是 ceil(Order/2)-1. 需要进行合并
@@ -267,9 +306,13 @@ int Node<T, Order>::Remove(T value) {
 
 template <class T, int Order>
 void Node<T, Order>::Merge(int node_pos, Node* left_node, Node* right_node) {
-    // 将父节点放入左边节点的末尾
-    left_node->keys[++left_node->position] = this->keys[node_pos];
-    left_node->NumbersOfKeys++;
+    // 如果是索引节点合并, 父节点需要下移动, 如果是叶子节点合并, 父节点直接删除
+    if(!left_node->leaf_node) {
+        // 将父节点放入左边节点的末尾
+        left_node->keys[++left_node->position] = this->keys[node_pos];
+        left_node->NumbersOfKeys++;
+    }
+
     // 将右节点的所有键值对以及节点合并到左节点
     int move_node = 0;
     for (move_node = 0; move_node < right_node->NumbersOfKeys; move_node++) {
@@ -369,7 +412,7 @@ void BTree<T, Order>::Insert(T value) {
     count++;
     //if Tree is empty
     if (this->Root == nullptr) {
-        this->Root = new Node<T, Order>();
+        this->Root = new Node<T, Order>(true);
         this->Root->keys[++this->Root->position] = value;
         this->Root->NumbersOfKeys = 1;
     }
@@ -381,7 +424,7 @@ void BTree<T, Order>::Insert(T value) {
             T mid;
             // 将Root节点分裂
             Node<T, Order>* splittedNode = this->Root->split(this->Root, &mid);
-            Node<T, Order>* newNode = new Node<T, Order>();
+            Node<T, Order>* newNode = new Node<T, Order>(false);
             newNode->keys[++newNode->position] = mid;
             newNode->NumbersOfKeys = 1;
             // 将原来的Root与分裂的节点作为新的根节点的左右子节点
@@ -466,12 +509,15 @@ int main()
     t.Insert('P');
     t.Remove('F');
     t.Insert('Q');
+    t.Insert('U');
+    t.Insert('V');
+    t.Insert('W');
     t.Remove('M');
     t.Remove('L');
     t.Remove('G');
     t.Remove('P');
     t.Remove('R');
-    // t.Remove('F');
+    t.Remove('F');
     t.Print(); // Should output the following on the screen:
     //t.traverse();
     /*

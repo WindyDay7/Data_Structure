@@ -245,7 +245,7 @@ int Node<T, Order>::Remove(T value) {
             }
         }
     }
-    // 如果删除之后的节点的个数大于等于 ceil(Order/2)-1, 直接删除, 不做其余操作
+    // 如果删除之后的节点的个数大于等于 ceil(Order/2)-1, 直接删除, 不做其余操作. 叶子节点则没有该限制
     if (this->childs[0] == nullptr || this->NumbersOfKeys >= ceil(Order / 2.0) - 1) {
         return 0;
     }
