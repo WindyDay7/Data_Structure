@@ -8,14 +8,15 @@
 #include <vector>
 #include <algorithm>
 #include "AVLTree_Node.hpp"
+#include "AVL_Show.hpp"
 
 template <class T>
 class AVLTree {
     int _size;
     AVLTreeNode<T> *root;
     
-    void balance(std::vector<AVLTreeNode<T>**> path);
-    void display(AVLTreeNode<T>* cur, int depth=0, int state=0);
+    void balance(std::vector<AVLTreeNode<T>*>& path);
+    void display(AVLTreeNode<T>* cur);
     
 public:
     AVLTree();

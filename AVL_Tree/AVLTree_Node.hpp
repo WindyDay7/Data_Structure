@@ -10,7 +10,8 @@ template <class T>
 struct AVLTreeNode {
     AVLTreeNode *left;
     AVLTreeNode *right;
-    
+    //记录坐标, 用于打印
+    int x, y;
     const T value;
     int count;  // how many nodes are there in this subtree
     int height;  // 树的高度

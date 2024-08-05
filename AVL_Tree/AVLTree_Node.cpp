@@ -1,4 +1,5 @@
 #include "AVLTree_Node.hpp"
+#include "AVL_Show.hpp"
 #include <algorithm>
 #include <math.h>
 
@@ -14,8 +15,9 @@ AVLTreeNode<T>::AVLTreeNode(T value): value(value){
 
 template <class T>
 int AVLTreeNode<T>::balanceFactor() {
-    int left_heght = 2;
-    return 2;
+    int left_heght = this->left->height;
+    int right_hegiht = this->right->height;
+    return left_heght - right_hegiht;
 }
 
 template <class T>
@@ -47,5 +49,3 @@ AVLTreeNode<T>* AVLTreeNode<T>::right_rotate() {
     temp->updateValues();
     return temp;
 }
-
-
