@@ -1,7 +1,4 @@
 #include "AVLTree_Node.hpp"
-#include "AVL_Show.hpp"
-#include <algorithm>
-#include <math.h>
 
 template <class T>
 AVLTreeNode<T>::AVLTreeNode(T value): value(value){

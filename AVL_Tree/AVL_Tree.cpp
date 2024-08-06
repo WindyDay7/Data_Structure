@@ -1,51 +1,58 @@
 #include "AVL_Tree.hpp"
-#include "AVLTree_Node.hpp"
-#include <vector>
-#include <algorithm>
-
 
 template<class T>
 bool AVLTree<T>::empty() const {
     return root == nullptr;
 }
 
-template<class T>
-void AVLTree<T>::display(AVLTreeNode<T>* cur) {
-    const int widthZoom = 3;
-    printf("width zoom: %d\n", widthZoom);
-    Canvas::resetBuffer();
-    std::queue<AVLTreeNode<T> *> q;
-    q.push(root);
-    int x, y, val;
-    std::string sval;
-    while (!q.empty())
-    {
-        auto p = q.front();
-        q.pop();
-        bool l = (p->left != nullptr);
-        bool r = (p->right != nullptr);
-        x = p->x, y = p->y, val = p->val, sval = to_string(p->val);
-        Canvas::put(2 * y, widthZoom * x, sval);
-        if (l)
-        {
-            q.push(p->left);
-            Canvas::put(2 * y + 1, widthZoom * p->left->x, '_', 
-                        widthZoom * (x - p->left->x) + sval.length() / 2);
-        }
-        if (r)
-        {
-            q.push(p->right);
-            Canvas::put(2 * y + 1, widthZoom * x, '_',
-                        widthZoom * (p->right->x - x) + to_string(p->right->val).length());
-        }
-        if (l || r)
-            Canvas::put(2 * y + 1, widthZoom * x + sval.length() / 2, "|");
-    }
-    Canvas::draw();
+template <class T>
+AVLTree<T>::AVLTree() {
+    root = nullptr;
+    _size = 0;
 }
 
 template <class T>
-int AVLTree<T>::find(T value) const{
+AVLTree<T>::~AVLTree() {
+    clear();
+}
+
+template <class T>
+void AVLTree<T>::clear() {
+    std::vector<AVLTreeNode<T>*> stack;
+    
+    if (root != nullptr)
+        stack.push_back(root);
+    
+    while (!stack.empty()){
+        AVLTreeNode<T> *node = stack.back();
+        stack.pop_back();
+        
+        if (node->left != nullptr)
+            stack.push_back(node->left);
+        
+        if (node->right != nullptr)
+            stack.push_back(node->right);
+        
+        _size--;
+        delete node;
+    }
+    
+    root = nullptr;
+}
+
+template <class T>
+void AVLTree<T>::display() {
+    printf("\n");
+    if (root != nullptr)
+        display(root);
+    else
+        printf("Empty");
+    printf("\n");
+}
+
+
+template <class T>
+int AVLTree<T>::find(T value) const {
     AVLTreeNode<T> *direct = root;
     int idx = 0;
     while (direct != nullptr && direct->value != value) {
@@ -67,39 +74,50 @@ template <class T>
 void AVLTree<T>::balance(std::vector<AVLTreeNode<T>*>& path) {
     // 将路径设置为从下到上, 从叶子节点到根节点
     std::reverse(path.begin(), path.end());
-    // 更新从叶子节点到根节点的高度与count, 高度可能会修改, count一定会+1
-    for(AVLTreeNode<T>*& avltree_node: path) {
-        avltree_node->updateValues();
-    }
-    for(int i = 0; i<path.size(); i++) {
+    // 新建一个假的根节点作为当前根节点的根节点
+    AVLTreeNode<T>* pre_root = new AVLTreeNode<T>(path.back()->value);
+    pre_root->left = path.back();
+    for(size_t i = 0; i<path.size()-1; i++) {
         AVLTreeNode<T>* avltree_node = path[i];
+        // 更新从叶子节点到根节点的高度与count, 高度可能会修改, count一定会+1
         // 前面的节点可能存在调整, 需要更新节点的信息
         avltree_node->updateValues();
         if(avltree_node->balanceFactor() == 2) {
-            if(path[i-1]->balanceFactor() == 1) {
-                avltree_node->right_rotate();
+            if(path[i-1]->balanceFactor() == -1) {
+                avltree_node->left = path[i-1]->left_rotate();
             }
             else {
-                path[i-1]->left_rotate();
-                avltree_node->right_rotate();
+                if(path[i+1]->left == avltree_node) {
+                    path[i+1]->left=avltree_node->right_rotate();
+                }
+                else {
+                    path[i+1]->right=avltree_node->right_rotate();
+                }
             }
         }
         else if (avltree_node->balanceFactor() == -2) {
-            if(path[i-1]->balanceFactor() == -1) {
-                avltree_node->left_rotate();
+            if(path[i-1]->balanceFactor() == 1) {
+                avltree_node->right = path[i-1]->right_rotate();
             }
             else {
-                path[i-1]->right_rotate();
-                avltree_node->right_rotate();
+                if(path[i+1]->left == avltree_node) {
+                    path[i+1]->left=avltree_node->left_rotate();
+                }
+                else {
+                    path[i+1]->right=avltree_node->left_rotate();
+                }
             }
         }
     }
+    root = pre_root->left;
+    pre_root->left = nullptr;
+    delete pre_root;
     return;
 }
 
 template<class T>
 void AVLTree<T>::insert(T value) {
-    std::vector<AVLTree<T>*> insert_path;
+    std::vector<AVLTreeNode<T>*> insert_path;
     AVLTreeNode<T>* direct = root;
     // 找到插入的节点
     while(direct!=nullptr && direct->value != value) {
@@ -117,6 +135,10 @@ void AVLTree<T>::insert(T value) {
     }
     // 新建插入的节点
     AVLTreeNode<T>* new_node = new AVLTreeNode<T>(value);
+    if(root == nullptr) {
+        root = new_node;
+        return;
+    }
     new_node->height = insert_path.back()->height+1;
     // 将新的节点插入到叶子节点的左节点还是右节点
     if(insert_path.back()->value < value) {
@@ -126,7 +148,7 @@ void AVLTree<T>::insert(T value) {
         insert_path.back()->left = new_node;
     }
     // 需要平衡的节点都在该路径上
-    balance(std::move(insert_path));
+    balance(insert_path);
 }
 
 
