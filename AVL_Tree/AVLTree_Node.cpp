@@ -46,3 +46,10 @@ AVLTreeNode<T>* AVLTreeNode<T>::right_rotate() {
     temp->updateValues();
     return temp;
 }
+
+
+template class AVLTreeNode<int>;
+template class AVLTreeNode<short>;
+template class AVLTreeNode<long>;
+template class AVLTreeNode<long long>;
+// template class AVLTreeNode<std::string>;

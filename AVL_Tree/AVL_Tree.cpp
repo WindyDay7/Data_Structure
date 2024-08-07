@@ -153,5 +153,10 @@ void AVLTree<T>::insert(T value) {
 
 
 
+template class AVLTree<int>;
+template class AVLTree<short>;
+template class AVLTree<long>;
+template class AVLTree<long long>;
+// template class AVLTree<std::string>;
 
 

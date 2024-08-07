@@ -9,7 +9,7 @@ void AVLTree<T>::display(AVLTreeNode<T>* root) {
     Canvas::resetBuffer();
     std::queue<AVLTreeNode<T> *> q;
     q.push(root);
-    int x, y, val;
+    int x, y;
     std::string sval;
     while (!q.empty())
     {
@@ -17,7 +17,7 @@ void AVLTree<T>::display(AVLTreeNode<T>* root) {
         q.pop();
         bool l = (p->left != nullptr);
         bool r = (p->right != nullptr);
-        x = p->x, y = p->y, val = p->value, sval = std::to_string(p->value);
+        x = p->x, y = p->y, sval = std::to_string(p->value);
         Canvas::put(2 * y, widthZoom * x, sval);
         if (l)
         {
@@ -84,3 +84,13 @@ void AVLTree<T>::initCoordinate(AVLTreeNode<T> *root)
     initY(root);
 }
 
+template class AVLTree<int>;
+template class AVLTree<short>;
+template class AVLTree<long>;
+template class AVLTree<long long>;
+// template class AVLTree<std::string>;
+template class AVLTreeNode<int>;
+template class AVLTreeNode<short>;
+template class AVLTreeNode<long>;
+template class AVLTreeNode<long long>;
+// template class AVLTreeNode<std::string>;
