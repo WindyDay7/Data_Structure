@@ -11,7 +11,15 @@ int main(int argc, const char * argv[]) {
     tree.insert(3);
     tree.insert(5);
     tree.insert(43);
-    
+    tree.insert(13);
+    tree.insert(23);
+    tree.insert(7);
+    tree.insert(22);
+      tree.insert(41);
+    tree.insert(19);
+    tree.insert(27);
+    tree.insert(9);
+    tree.insert(14);
     // tree.erase("KEO");
     tree.display();
     

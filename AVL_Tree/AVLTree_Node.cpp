@@ -12,8 +12,8 @@ AVLTreeNode<T>::AVLTreeNode(T value): value(value){
 
 template <class T>
 int AVLTreeNode<T>::balanceFactor() {
-    int left_heght = this->left->height;
-    int right_hegiht = this->right->height;
+    int left_heght = this->left==nullptr? 0:this->left->height;
+    int right_hegiht = this->right==nullptr? 0:this->right->height;
     return left_heght - right_hegiht;
 }
 

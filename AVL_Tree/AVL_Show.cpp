@@ -84,6 +84,7 @@ void AVLTree<T>::initCoordinate(AVLTreeNode<T> *root)
     initY(root);
 }
 
+char Canvas::buffer[Canvas::HEIGHT][Canvas::WIDTH + 1];
 template class AVLTree<int>;
 template class AVLTree<short>;
 template class AVLTree<long>;
