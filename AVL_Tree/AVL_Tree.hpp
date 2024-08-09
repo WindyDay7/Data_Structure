@@ -27,7 +27,7 @@ public:
     ~AVLTree();
     
     void insert(T value);
-    // void erase(T value);
+    void erase(T value);
     
     void clear();
     bool empty() const;

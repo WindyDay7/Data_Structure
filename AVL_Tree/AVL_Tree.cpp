@@ -1,4 +1,5 @@
 #include "AVL_Tree.hpp"
+#include "AVLTree_Node.hpp"
 
 template<class T>
 bool AVLTree<T>::empty() const {
@@ -77,6 +78,7 @@ void AVLTree<T>::balance(std::vector<AVLTreeNode<T>*>& path) {
     // 新建一个假的根节点作为当前根节点的根节点
     AVLTreeNode<T>* pre_root = new AVLTreeNode<T>(path.back()->value);
     pre_root->left = path.back();
+    path.emplace_back(pre_root);
     for(size_t i = 0; i<path.size()-1; i++) {
         AVLTreeNode<T>* avltree_node = path[i];
         // 更新从叶子节点到根节点的高度与count, 高度可能会修改, count一定会+1
@@ -86,26 +88,22 @@ void AVLTree<T>::balance(std::vector<AVLTreeNode<T>*>& path) {
             if(path[i-1]->balanceFactor() == -1) {
                 avltree_node->left = path[i-1]->left_rotate();
             }
+            if(path[i+1]->left == avltree_node) {
+                path[i+1]->left=avltree_node->right_rotate();
+            }
             else {
-                if(path[i+1]->left == avltree_node) {
-                    path[i+1]->left=avltree_node->right_rotate();
-                }
-                else {
-                    path[i+1]->right=avltree_node->right_rotate();
-                }
+                path[i+1]->right=avltree_node->right_rotate();
             }
         }
         else if (avltree_node->balanceFactor() == -2) {
             if(path[i-1]->balanceFactor() == 1) {
                 avltree_node->right = path[i-1]->right_rotate();
             }
+            if(path[i+1]->left == avltree_node) {
+                path[i+1]->left=avltree_node->left_rotate();
+            }
             else {
-                if(path[i+1]->left == avltree_node) {
-                    path[i+1]->left=avltree_node->left_rotate();
-                }
-                else {
-                    path[i+1]->right=avltree_node->left_rotate();
-                }
+                path[i+1]->right=avltree_node->left_rotate();
             }
         }
     }
@@ -139,7 +137,6 @@ void AVLTree<T>::insert(T value) {
         root = new_node;
         return;
     }
-    new_node->height = insert_path.back()->height+1;
     // 将新的节点插入到叶子节点的左节点还是右节点
     if(insert_path.back()->value < value) {
         insert_path.back()->right = new_node;
@@ -150,6 +147,12 @@ void AVLTree<T>::insert(T value) {
     // 需要平衡的节点都在该路径上
     balance(insert_path);
 }
+
+template<class T>
+void AVLTree<T>::erase(T value) {
+    
+}
+
 
 
 
