@@ -1,6 +1,6 @@
 # 定义编译器和编译选项
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -g
+CXXFLAGS = -std=c++11 -Wall -g -w
 
 # 定义目标文件和源文件
 OBJS = AVLTree_Node.o AVL_Tree.o AVL_Show.o main.o

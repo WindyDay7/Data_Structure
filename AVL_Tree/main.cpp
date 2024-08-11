@@ -3,10 +3,10 @@
 #include "AVL_Tree.hpp"
 
 
-int main(int argc, const char * argv[]) {
+int main(int argc, const char* argv[]) {
 
     AVLTree<int> tree;
-    
+
     tree.insert(12);
     tree.insert(3);
     tree.insert(5);
@@ -20,15 +20,17 @@ int main(int argc, const char * argv[]) {
     tree.insert(27);
     tree.insert(9);
     tree.insert(14);
+    tree.erase(3);
+    tree.erase(23);
     // tree.erase("KEO");
     tree.display();
-    
+
     // std::cout << tree.lower_bound("Keo") << std::endl;
     // std::cout << tree.find_max() << std::endl;
     // std::cout << tree.size() << std::endl;
     // std::cout << tree.empty() << std::endl;
     // tree.clear();
     // std::cout << tree.empty() << std::endl;
-    
+
     return 0;
 }
