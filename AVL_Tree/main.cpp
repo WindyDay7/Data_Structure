@@ -21,16 +21,18 @@ int main(int argc, const char* argv[]) {
     tree.insert(9);
     tree.insert(14);
     tree.erase(3);
+    tree.display();
     tree.erase(23);
     // tree.erase("KEO");
     tree.display();
-
-    // std::cout << tree.lower_bound("Keo") << std::endl;
-    // std::cout << tree.find_max() << std::endl;
-    // std::cout << tree.size() << std::endl;
-    // std::cout << tree.empty() << std::endl;
-    // tree.clear();
-    // std::cout << tree.empty() << std::endl;
-
+    tree.erase(13);
+    tree.erase(12);
+    tree.display();
+    tree.erase(19);
+    
+    tree.erase(9);
+    tree.display();
+    tree.erase(7);
+    tree.display();
     return 0;
 }

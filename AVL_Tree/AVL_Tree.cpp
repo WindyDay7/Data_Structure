@@ -85,7 +85,7 @@ void AVLTree<T>::balance(std::vector<AVLTreeNode<T>*>& path) {
         // 前面的节点可能存在调整, 需要更新节点的信息
         avltree_node->updateValues();
         if (avltree_node->balanceFactor() == 2) {
-            if (path[i - 1]->balanceFactor() == -1) {
+            if (i > 0 && path[i - 1]->balanceFactor() == -1) {
                 avltree_node->left = path[i - 1]->left_rotate();
             }
             if (path[i + 1]->left == avltree_node) {
@@ -96,7 +96,7 @@ void AVLTree<T>::balance(std::vector<AVLTreeNode<T>*>& path) {
             }
         }
         else if (avltree_node->balanceFactor() == -2) {
-            if (path[i - 1]->balanceFactor() == 1) {
+            if (i > 0 && path[i - 1]->balanceFactor() == 1) {
                 avltree_node->right = path[i - 1]->right_rotate();
             }
             if (path[i + 1]->left == avltree_node) {
@@ -172,15 +172,32 @@ void AVLTree<T>::erase(T value) {
         std::cout << "The Value would bd deleted not found in the tree" << std::endl;
         return;
     }
-    // 找到该节点的右子树的最左节点, 将该节点替换需要删除的节点
-    if (direct->right == nullptr) {
+    temp_node = direct;
+    // 如果删除的节点左右子树都没有, 也就是删除叶子节点
+    if (direct->left == nullptr && direct->right == nullptr) {
+        if(pre_delete->value > value) {
+            pre_delete->left = nullptr;
+        }
+        else {
+            pre_delete->right = nullptr;
+        }
+        delete direct;
         balance(find_path);
         return;
     }
-    direct = direct->right;
-    pre_direct = direct;
+    pre_direct = pre_delete;
+    // 如果当前节点存在右子树
+    if(direct->right != nullptr) {
+        // 找到该节点的右子树的最左节点, 将该节点替换需要删除的节点
+        pre_direct = direct;
+        direct = direct->right;
+    }
+    else {
+        pre_direct = direct;
+        direct = direct->left;
+    }
     while (direct != nullptr && direct->left != nullptr) {
-        find_path.emplace_back(direct);
+        change_path.emplace_back(direct);
         pre_direct = direct;
         direct = direct->left;
     }
@@ -189,19 +206,34 @@ void AVLTree<T>::erase(T value) {
     // 如果被删除的节点是根节点
     if (pre_delete != nullptr) {
         if (pre_delete->value < value) {
-            pre_delete->left = direct;
+            pre_delete->right = direct;
         }
         else {
-            pre_delete->right = direct;
+            pre_delete->left = direct;
         }
     }
     // 替换需要删除的节点
-    direct->left = temp_node->left;
-    direct->right = temp_node->right;
+    if(temp_node->left == direct) {
+        direct->left = nullptr;
+    }
+    else {
+        direct->left = temp_node->left;
+    }
+    if(temp_node->right == direct) {
+        direct->right = nullptr;
+    }
+    else {
+        direct->right = temp_node->right;
+    }
     // 将替换后的节点删除
     temp_node->left = nullptr;
     temp_node->right = nullptr;
     delete temp_node;
+    // 将后续节点添加到修改路径中
+    find_path.emplace_back(direct);
+    find_path.insert(find_path.end(), change_path.begin(), change_path.end());
+    balance(find_path);
+    return;
 }
 
 
