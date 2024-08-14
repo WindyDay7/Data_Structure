@@ -8,8 +8,8 @@
 class Canvas
 {
 public:
-    static const int HEIGHT = 10;
-    static const int WIDTH = 80;
+    static const int HEIGHT = 20;
+    static const int WIDTH = 90;
     static char buffer[HEIGHT][WIDTH + 1];
 
     static void draw()

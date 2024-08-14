@@ -84,10 +84,13 @@ void AVLTree<T>::balance(std::vector<AVLTreeNode<T>*>& path) {
         // 更新从叶子节点到根节点的高度与count, 高度可能会修改, count一定会+1
         // 前面的节点可能存在调整, 需要更新节点的信息
         avltree_node->updateValues();
+        // 如果左子树的高度比右子树的高度大2, 那么需要调整
         if (avltree_node->balanceFactor() == 2) {
-            if (i > 0 && path[i - 1]->balanceFactor() == -1) {
-                avltree_node->left = path[i - 1]->left_rotate();
+            // 如果这棵子树的左子树需要调整, 进行调整
+            if (avltree_node->left->balanceFactor() == -1) {
+                avltree_node->left = avltree_node->left->left_rotate();
             }
+            // 这里需要判断返回的子树的根节点是父节点的左子树还是右子树
             if (path[i + 1]->left == avltree_node) {
                 path[i + 1]->left = avltree_node->right_rotate();
             }
@@ -96,8 +99,8 @@ void AVLTree<T>::balance(std::vector<AVLTreeNode<T>*>& path) {
             }
         }
         else if (avltree_node->balanceFactor() == -2) {
-            if (i > 0 && path[i - 1]->balanceFactor() == 1) {
-                avltree_node->right = path[i - 1]->right_rotate();
+            if (avltree_node->right->balanceFactor() == 1) {
+                avltree_node->right = avltree_node->right->right_rotate();
             }
             if (path[i + 1]->left == avltree_node) {
                 path[i + 1]->left = avltree_node->left_rotate();
@@ -152,10 +155,10 @@ template<class T>
 void AVLTree<T>::erase(T value) {
     std::vector<AVLTreeNode<T>*> find_path;
     std::vector<AVLTreeNode<T>*> change_path;
-    AVLTreeNode<T>* direct = root;
-    AVLTreeNode<T>* temp_node = nullptr;
-    AVLTreeNode<T>* pre_direct = nullptr;
-    AVLTreeNode<T>* pre_delete = nullptr;
+    AVLTreeNode<T>* direct = root;              // 遍历访问的节点
+    AVLTreeNode<T>* temp_node = nullptr;        // 临时保存需要删除的节点
+    AVLTreeNode<T>* pre_direct = nullptr;       // 删除节点的直接后续节点(叶子节点)的父节点
+    AVLTreeNode<T>* pre_delete = nullptr;       // 被删除节点的父节点
     // 找到插入的节点
     while (direct != nullptr && direct->value != value) {
         find_path.emplace_back(direct);
@@ -172,6 +175,7 @@ void AVLTree<T>::erase(T value) {
         std::cout << "The Value would bd deleted not found in the tree" << std::endl;
         return;
     }
+    // 临时保存需要删除的节点
     temp_node = direct;
     // 如果删除的节点左右子树都没有, 也就是删除叶子节点
     if (direct->left == nullptr && direct->right == nullptr) {
@@ -185,6 +189,7 @@ void AVLTree<T>::erase(T value) {
         balance(find_path);
         return;
     }
+    // 设置被保存的节点
     pre_direct = pre_delete;
     // 如果当前节点存在右子树
     if(direct->right != nullptr) {
@@ -196,13 +201,14 @@ void AVLTree<T>::erase(T value) {
         pre_direct = direct;
         direct = direct->left;
     }
+    // 找到被删除节点的直接后续节点, 这个节点就是叶子节点
     while (direct != nullptr && direct->left != nullptr) {
         change_path.emplace_back(direct);
         pre_direct = direct;
         direct = direct->left;
     }
     // 找到需要替换的节点, 将这个节点与需要删除的节点替换
-    pre_direct->left = nullptr;
+    pre_direct->left = direct->right;             // 将叶子节点隔开
     // 如果被删除的节点是根节点
     if (pre_delete != nullptr) {
         if (pre_delete->value < value) {

@@ -20,19 +20,25 @@ int main(int argc, const char* argv[]) {
     tree.insert(27);
     tree.insert(9);
     tree.insert(14);
-    tree.erase(3);
+    tree.insert(14);
+    tree.insert(17);
+    tree.insert(34);
+    tree.insert(48);
+    tree.insert(63);
+
+    tree.insert(57);
+    tree.insert(24);
+    tree.insert(75);
+    tree.insert(67);
     tree.display();
-    tree.erase(23);
-    // tree.erase("KEO");
+    tree.erase(67);
+    tree.erase(24);
     tree.display();
+    tree.erase(34);
+
     tree.erase(13);
-    tree.erase(12);
-    tree.display();
-    tree.erase(19);
-    
-    tree.erase(9);
-    tree.display();
-    tree.erase(7);
+    // tree.display();
+    // tree.erase(27);
     tree.display();
     return 0;
 }
