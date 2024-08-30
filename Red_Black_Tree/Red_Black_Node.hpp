@@ -16,14 +16,18 @@ struct Red_Black_Node {
     Red_Black_Node *parent;
     //记录坐标, 用于打印
     int x, y;
-    T value;        // 节点的值, 红黑树中节点的值是必须可以改变的
+    T value;                    // 节点的值, 红黑树中节点的值是必须可以改变的
     Color node_color;           // 节点的颜色
-    Red_Black_Node(T value);
-    void updateValues();
+    bool NIL;                   // 该节点是否是 NIL 节点
+    Red_Black_Node(T value, Color node_color, bool NIL);    // 构造函数
     int Balance_Action();       // 返回红黑树需要进行的不同类型的操作
     void Set_Color(Color new_color);
-    Red_Black_Node* left_rotate();
-    Red_Black_Node* right_rotate();
+    Red_Black_Node* LeftRotate();
+    Red_Black_Node* RightRotate();
+    Red_Black_Node* GetUncle();
+    Red_Black_Node* GetSibling();
+    Red_Black_Node* GetCloseNephew();
+    Red_Black_Node* GetFarNephew();
 };
 
 #endif /* Red_Black_Node_hpp */
