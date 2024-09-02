@@ -139,6 +139,73 @@ void Red_Black_Tree<T>::insert(T value) {
         new_node->left = new_left_node;
         pre_direct->right = new_node;
     }
+    InsertBalanceAdjust(new_node);
+}
+
+template <class T>
+int Red_Black_Tree<T>::RemoveBalanceAction(Red_Black_Node<T>* node) {
+    if(node->node_color == Color::RED) {
+        return 1;
+    }
+    else {
+        if((node->left->NIL && !node->right->NIL && node->right->node_color == Color::RED) || (node->right->NIL && !node->left->NIL && node->left->node_color == Color::RED)) {
+            return 2;
+        }
+        // 如果父节点为红色
+        if(node->parent->node_color == Color::RED) {
+            if(node->GetCloseNephew()->node_color == Color::BLACK) {
+
+            }
+            if(node->GetCloseNephew()->node_color == Color::RED) {
+
+            }
+        }
+        // 如果父节点为黑色
+        else {
+
+        }
+    }
+}
+
+
+template <class T>
+void Red_Black_Tree<T>::RemoveBalanceAdjust(Red_Black_Node<T>* node) {
+    return;
+}
+
+template <class T>
+void Red_Black_Tree<T>::erase(T value) {
+    Red_Black_Node<T>* delete_node = nullptr;
+    Red_Black_Node<T>* pre_delete_node = nullptr;
+    Red_Black_Node<T>* find_node = this-> root;
+    while(find_node != nullptr && find_node->value != value && !find_node->NIL) {
+        if(find_node->value < value) {
+            find_node = find_node->right;
+        }
+        else {
+            find_node = find_node->left;
+        }
+    }
+    // 如果找不到要删除的节点, 那么直接返回, 要删除的节点不存在
+    if(find_node->NIL) {
+        return;
+    }
+    // 找到该节点的直接后续节点
+    // 如果左子树或者右子树为空, 那么可以直接删除该节点, 将后续节点补上来
+    if(find_node->left->NIL || find_node->right->NIL) {
+        delete_node = find_node;
+        RemoveBalanceAdjust(delete_node);
+        return;
+    }
+    // 找到当前节点的右子树节点
+    delete_node = find_node->right;
+    // 找到右子树的最左边的叶子节点, 作为直接后续节点
+    while(!delete_node->left->NIL) {
+        delete_node = delete_node->left;
+    }
+    find_node->SetValue(delete_node->value);
+    RemoveBalanceAdjust(delete_node);
+    return;
 }
 
 

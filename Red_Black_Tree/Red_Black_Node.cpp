@@ -33,6 +33,11 @@ void Red_Black_Node<T>::Set_Color(Color new_color) {
 }
 
 template <class T>
+void Red_Black_Node<T>::SetValue(T new_value) {
+    this->value = new_value;
+}
+
+template <class T>
 Red_Black_Node<T>* Red_Black_Node<T>::GetUncle() {
     if(this->parent == nullptr || this->parent->parent == nullptr) {
         return nullptr;

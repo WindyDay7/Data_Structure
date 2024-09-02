@@ -22,6 +22,7 @@ struct Red_Black_Node {
     Red_Black_Node(T value, Color node_color, bool NIL);    // 构造函数
     int Balance_Action();       // 返回红黑树需要进行的不同类型的操作
     void Set_Color(Color new_color);
+    void SetValue(T new_value);
     Red_Black_Node* LeftRotate();
     Red_Black_Node* RightRotate();
     Red_Black_Node* GetUncle();
