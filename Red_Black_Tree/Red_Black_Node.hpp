@@ -11,9 +11,9 @@ enum Color { RED, BLACK };
 
 template <class T>
 struct Red_Black_Node {
-    Red_Black_Node *left;
-    Red_Black_Node *right;
-    Red_Black_Node *parent;
+    Red_Black_Node* left;
+    Red_Black_Node* right;
+    Red_Black_Node* parent;
     //记录坐标, 用于打印
     int x, y;
     T value;                    // 节点的值, 红黑树中节点的值是必须可以改变的
@@ -23,6 +23,8 @@ struct Red_Black_Node {
     int Balance_Action();       // 返回红黑树需要进行的不同类型的操作
     void Set_Color(Color new_color);
     void SetValue(T new_value);
+    // 将当前节点child 的父节点指向新的对应的孩子节点 new_child
+    void SetNewChild(Red_Black_Node* new_child);
     Red_Black_Node* LeftRotate();
     Red_Black_Node* RightRotate();
     Red_Black_Node* GetUncle();

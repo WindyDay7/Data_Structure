@@ -23,7 +23,7 @@ public:
         std::cout << std::endl;
     }
 
-    static void put(int r, int c, const std::string &s)
+    static void put(int r, int c, const std::string& s)
     {
         int len = s.length();
         int idx = 0;

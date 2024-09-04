@@ -7,7 +7,7 @@ void Red_Black_Tree<T>::display(Red_Black_Node<T>* root) {
     const int widthZoom = 3;
     printf("width zoom: %d\n", widthZoom);
     Canvas::resetBuffer();
-    std::queue<Red_Black_Node<T> *> q;
+    std::queue<Red_Black_Node<T>*> q;
     q.push(root);
     int x, y;
     std::string sval;
@@ -22,14 +22,14 @@ void Red_Black_Tree<T>::display(Red_Black_Node<T>* root) {
         if (l)
         {
             q.push(p->left);
-            Canvas::put(2 * y + 1, widthZoom * p->left->x, '_', 
-                        widthZoom * (x - p->left->x) + sval.length() / 2);
+            Canvas::put(2 * y + 1, widthZoom * p->left->x, '_',
+                widthZoom * (x - p->left->x) + sval.length() / 2);
         }
         if (r)
         {
             q.push(p->right);
             Canvas::put(2 * y + 1, widthZoom * x, '_',
-                        widthZoom * (p->right->x - x) + std::to_string(p->right->value).length());
+                widthZoom * (p->right->x - x) + std::to_string(p->right->value).length());
         }
         if (l || r)
             Canvas::put(2 * y + 1, widthZoom * x + sval.length() / 2, "|");
@@ -38,7 +38,7 @@ void Red_Black_Tree<T>::display(Red_Black_Node<T>* root) {
 }
 
 template<class T>
-void Red_Black_Tree<T>::initX(Red_Black_Node<T> *p, int &x)
+void Red_Black_Tree<T>::initX(Red_Black_Node<T>* p, int& x)
 {
     if (p == nullptr)
         return;
@@ -48,12 +48,12 @@ void Red_Black_Tree<T>::initX(Red_Black_Node<T> *p, int &x)
 }
 
 template<class T>
-void Red_Black_Tree<T>::initY(Red_Black_Node<T> *root)
+void Red_Black_Tree<T>::initY(Red_Black_Node<T>* root)
 {
     if (root == nullptr)
         return;
 
-    typedef std::pair<Red_Black_Node<T> *, int> Node;
+    typedef std::pair<Red_Black_Node<T>*, int> Node;
 
     root->y = 1;
 
@@ -77,7 +77,7 @@ void Red_Black_Tree<T>::initY(Red_Black_Node<T> *root)
 }
 
 template<class T>
-void Red_Black_Tree<T>::initCoordinate(Red_Black_Node<T> *root)
+void Red_Black_Tree<T>::initCoordinate(Red_Black_Node<T>* root)
 {
     int x = 0;
     initX(root, x);
