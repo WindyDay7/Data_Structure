@@ -162,11 +162,14 @@ int Red_Black_Tree<T>::RemoveBalanceAction(Red_Black_Node<T>* node) {
             if (node->GetSibling()->node_color == Color::RED) {
                 return 6;
             }
+            // 如果兄弟节点是黑色
             if (node->GetSibling()->node_color == Color::BLACK) {
+                // 如果远侄子节点是红色, 需要进行一次旋转
                 if (node->GetFarNephew()->node_color == Color::RED) {
                     return 7;
                 }
                 else {
+                    // 如果兄弟节点是黑色, 邻近侄子节点是红色
                     if (node->GetCloseNephew()->node_color == Color::RED) {
                         return 8;
                     }
@@ -183,13 +186,11 @@ int Red_Black_Tree<T>::RemoveBalanceAction(Red_Black_Node<T>* node) {
 
 template <class T>
 void Red_Black_Tree<T>::RemoveBalanceAdjust(Red_Black_Node<T>* node) {
-    Red_Black_Node<T>* node_child = node->left == nullptr ? node->right : node->left;
+    Red_Black_Node<T>* node_child = node->left->NIL ? node->right : node->left;
     Red_Black_Node<T>* temp_node = nullptr;
-    bool delete_flag = false;
     switch (this->RemoveBalanceAction(node)) {
     case 1:
         node->SetNewChild(node_child);
-        delete_flag = true;
         break;
     case 2:
         if (node->left->NIL) {
@@ -199,46 +200,39 @@ void Red_Black_Tree<T>::RemoveBalanceAdjust(Red_Black_Node<T>* node) {
             node->left->Set_Color(Color::BLACK);
         }
         node->SetNewChild(node_child);
-        delete_flag = true;
         break;
     case 3:
         this->root = node_child;
-        delete_flag = true;
         break;
     case 4:
         if (node == node->parent->left) {
-            // 在树结构中删除当前节点, 然后进行旋转
-            node->parent->left = node_child;
             temp_node = node->parent->LeftRotate();
         }
         else {
-            node->parent->right = node_child;
             temp_node = node->parent->RightRotate();
         }
         if (node->parent->parent == nullptr) {
             this->root = temp_node;
         }
-        delete_flag = true;
+        // 在树的结构中删除当前节点
+        node->SetNewChild(node_child);
         break;
     case 5:
         node->parent->Set_Color(Color::BLACK);
         if (node == node->parent->left) {
-            node->GetSibling()->RightRotate();
-            // 在树结构中删除当前节点
             node->parent->left = node_child;
             temp_node = node->parent->LeftRotate();
         }
         else {
             node->GetSibling()->LeftRotate();
-            // 在树结构中删除当前节点
-            node->parent->right = node_child;
             temp_node = node->parent->RightRotate();
         }
         // 如果父节点就是根节点, 那么旋转之后的节点为新的根节点
         if (node->parent->parent == nullptr) {
             this->root = temp_node;
         }
-        delete_flag = true;
+        // 在树的结构中删除当前节点
+        node->SetNewChild(node_child);
         break;
     case 6:
         node->parent->Set_Color(Color::RED);
@@ -252,15 +246,142 @@ void Red_Black_Tree<T>::RemoveBalanceAdjust(Red_Black_Node<T>* node) {
         if (node->parent->parent == nullptr) {
             this->root = temp_node;
         }
+        RemoveBalanceAdjust(node);
+        return;
         break;
+    case 7:
+        node->GetFarNephew()->Set_Color(Color::BLACK);
+        if (node == node->parent->left) {
+            temp_node = node->parent->LeftRotate();
+        }
+        else {
+            temp_node = node->parent->RightRotate();
+        }
+        if (node->parent->parent == nullptr) {
+            this->root = temp_node;
+        }
+        // 在树的结构中删除当前节点
+        node->SetNewChild(node_child);
+        break;
+    case 8:
+        if (node == node->parent->left) {
+            node->GetSibling()->LeftRotate();
+            temp_node = node->parent->RightRotate();
+        }
+        else {
+            node->GetSibling()->RightRotate();
+            temp_node = node->parent->LeftRotate();
+        }
+        if (node->parent->parent == nullptr) {
+            this->root = temp_node;
+        }
+        // 在树的结构中删除当前节点
+        node->SetNewChild(node_child);
+        break;
+    case 9:
+        node->GetSibling()->Set_Color(Color::RED);
+        node->SetNewChild(node_child);
+        node->parent = node->parent->parent;
+        // 如果当前节点是父节点的左子节点
+        if (node == node->parent->left) {
+            if (node->left->NIL) {
+                node->parent->left = node->right;
+                node->right->parent = node->parent;
+                // 此时还未修改node.parent
+                node->right = node->parent;
+                // 如果node节点的父节点是根节点
+                if (node->parent->parent == nullptr) {
+                    node->parent = nullptr;
+                    this->root = node;
+                }
+                else {
+                    node->parent = node->parent->parent;
+                    if (node->parent == node->parent->left) {
+                        node = node->parent->left;
+                    }
+                    else {
+                        node = node->parent->right;
+                    }
+                }
+            }
+            else {
+                // 如果当前节点的左节点为非 NIL 节点
+                node->parent->left = node->left;
+                node->left->parent = node->parent;
+                // 此时还未修改node.parent
+                node->left = node->parent;
+                // 如果node节点的父节点是根节点
+                if (node->parent->parent == nullptr) {
+                    node->parent = nullptr;
+                    this->root = node;
+                }
+                else {
+                    node->parent = node->parent->parent;
+                    if (node->parent == node->parent->left) {
+                        node = node->parent->left;
+                    }
+                    else {
+                        node = node->parent->right;
+                    }
+                }
+            }
+        }
+        // 如果当前节点是父节点的右子节点
+        else {
+            if (node->left->NIL) {
+                // 因为当前节点是父节点的右子节点
+                node->parent->right = node->right;
+                node->right->parent = node->parent;
+                // 此时还未修改node.parent
+                node->right = node->parent;
+                // 如果node节点的父节点是根节点
+                if (node->parent->parent == nullptr) {
+                    node->parent = nullptr;
+                    this->root = node;
+                }
+                else {
+                    node->parent = node->parent->parent;
+                    if (node->parent == node->parent->left) {
+                        node = node->parent->left;
+                    }
+                    else {
+                        node = node->parent->right;
+                    }
+                }
+            }
+            else {
+                // 如果当前节点的左节点为非 NIL 节点
+                node->parent->right = node->left;
+                node->left->parent = node->parent;
+                // 此时还未修改node.parent
+                node->left = node->parent;
+                // 如果node节点的父节点是根节点
+                if (node->parent->parent == nullptr) {
+                    node->parent = nullptr;
+                    this->root = node;
+                }
+                else {
+                    node->parent = node->parent->parent;
+                    if (node->parent == node->parent->left) {
+                        node = node->parent->left;
+                    }
+                    else {
+                        node = node->parent->right;
+                    }
+                }
+            }
+        }
+        break;
+
     default:
         break;
     }
-    if (delete_flag) {
+    if (node != nullptr) {
         node->left = node->left->NIL ? node->left : nullptr;
         node->right = node->right->NIL ? node->right : nullptr;
         node->parent = nullptr;
         delete node;
+        node = nullptr;
     }
 }
 

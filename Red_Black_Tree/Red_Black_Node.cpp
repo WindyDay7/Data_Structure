@@ -49,6 +49,7 @@ void Red_Black_Node<T>::SetValue(T new_value) {
     this->value = new_value;
 }
 
+// 为当前节点的父节点设置一个新的孩子节点, 当前节点仍然指向这个父节点
 template <class T>
 void Red_Black_Node<T>::SetNewChild(Red_Black_Node* new_child) {
     if (this->parent == nullptr) {
@@ -60,6 +61,7 @@ void Red_Black_Node<T>::SetNewChild(Red_Black_Node* new_child) {
     else {
         this->parent->right = new_child;
     }
+    new_child->parent = this;
 }
 
 template <class T>
