@@ -20,10 +20,9 @@ struct Red_Black_Node {
     Color node_color;           // 节点的颜色
     bool NIL;                   // 该节点是否是 NIL 节点
     Red_Black_Node(T value, Color node_color, bool NIL);    // 构造函数
-    int Balance_Action();       // 返回红黑树需要进行的不同类型的操作
     void Set_Color(Color new_color);
     void SetValue(T new_value);
-    // 将当前节点child 的父节点指向新的对应的孩子节点 new_child
+    // 将当前节点的父节点指向新的对应的孩子节点 new_child
     void SetNewChild(Red_Black_Node* new_child);
     Red_Black_Node* LeftRotate();
     Red_Black_Node* RightRotate();

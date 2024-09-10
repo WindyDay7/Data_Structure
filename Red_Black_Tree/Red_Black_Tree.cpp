@@ -2,6 +2,51 @@
 #include "Red_Black_Tree.hpp"
 
 template <class T>
+Red_Black_Tree<T>::Red_Black_Tree() {
+    root = nullptr;
+    _size = 0;
+}
+
+template <class T>
+Red_Black_Tree<T>::~Red_Black_Tree() {
+    clear();
+}
+
+template <class T>
+void Red_Black_Tree<T>::clear() {
+    std::vector<Red_Black_Node<T>*> stack;
+
+    if (root != nullptr)
+        stack.push_back(root);
+
+    while (!stack.empty()) {
+        Red_Black_Node<T>* node = stack.back();
+        stack.pop_back();
+
+        if (node->left != nullptr)
+            stack.push_back(node->left);
+
+        if (node->right != nullptr)
+            stack.push_back(node->right);
+
+        _size--;
+        delete node;
+    }
+    root = nullptr;
+}
+
+template <class T>
+void Red_Black_Tree<T>::display() {
+    printf("\n");
+    if (root != nullptr)
+        display(root);
+    else
+        printf("Empty");
+    printf("\n");
+}
+
+
+template <class T>
 int Red_Black_Tree<T>::InsertBalanceAction(Red_Black_Node<T>* node) {
     // 走到根节点了, 将该节点设为根节点, 为黑色
     if (node->parent == nullptr) {
@@ -59,8 +104,8 @@ void Red_Black_Tree<T>::InsertBalanceAdjust(Red_Black_Node<T>* node) {
         node->Set_Color(Color::RED);
         node->parent->Set_Color(Color::BLACK);
         node->parent->parent->Set_Color(Color::RED);
-        temp_node = this->parent->parent->RightRotate();
-        if (node->parent->parent->parent == nullptr) {
+        temp_node = node->parent->parent->RightRotate();
+        if (temp_node->parent == nullptr) {
             this->root = temp_node;
         }
         break;
@@ -68,14 +113,14 @@ void Red_Black_Tree<T>::InsertBalanceAdjust(Red_Black_Node<T>* node) {
         node->Set_Color(Color::RED);
         node->parent->Set_Color(Color::BLACK);
         node->parent->parent->Set_Color(Color::RED);
-        temp_node = this->parent->parent->LeftRotate();
-        if (node->parent->parent->parent == nullptr) {
+        temp_node = node->parent->parent->LeftRotate();
+        if (temp_node->parent == nullptr) {
             this->root = temp_node;
         }
         break;
     case 5:
         node->Set_Color(Color::RED);
-        node->parent->parent->Set_Color(Color::RED);
+        // node->parent->parent->Set_Color(Color::RED);
         node->parent->parent->left = node->parent->LeftRotate();
         // 实际问题被转换为case3 解决
         InsertBalanceAdjust(node->left);
@@ -95,6 +140,7 @@ template <class T>
 void Red_Black_Tree<T>::insert(T value) {
     Red_Black_Node<T>* direct = this->root;
     Red_Black_Node<T>* pre_direct = this->root;
+    // 找到插入的位置
     while (direct != nullptr && direct->value != value && !direct->NIL) {
         pre_direct = direct;
         if (direct->value < value) {
@@ -104,13 +150,12 @@ void Red_Black_Tree<T>::insert(T value) {
             direct = direct->left;
         }
     }
-    // 如果这个节点不是NIL节点, 该值已存在
-    if (!direct->NIL) {
-        return;
-    }
     // 新建插入的节点
     Red_Black_Node<T>* new_node = new Red_Black_Node<T>(value, Color::RED, false);
+    // 如果是空树, 设置新建节点为根节点
     if (this->root == nullptr) {
+        // 根节点为黑色
+        new_node->Set_Color(Color::BLACK);
         this->root = new_node;
         Red_Black_Node<T>* new_left_node = new Red_Black_Node<T>(0, Color::BLACK, true);
         Red_Black_Node<T>* new_right_node = new Red_Black_Node<T>(0, Color::BLACK, true);
@@ -118,6 +163,11 @@ void Red_Black_Tree<T>::insert(T value) {
         this->root->right = new_right_node;
         return;
     }
+    // 如果这个节点不是NIL节点, 该值已存在
+    if (!direct->NIL) {
+        return;
+    }
+    // 在正确的位置插入新建的节点
     if (direct == pre_direct->left) {
         Red_Black_Node<T>* new_right_node = new Red_Black_Node<T>(0, Color::BLACK, true);
         new_node->left = pre_direct->left;
@@ -130,6 +180,8 @@ void Red_Black_Tree<T>::insert(T value) {
         new_node->left = new_left_node;
         pre_direct->right = new_node;
     }
+    new_node->parent = pre_direct;
+    // 插入节点之后调整红黑树的结构
     InsertBalanceAdjust(new_node);
 }
 
@@ -174,6 +226,7 @@ int Red_Black_Tree<T>::RemoveBalanceAction(Red_Black_Node<T>* node) {
                         return 8;
                     }
                     else {
+                        // 如果兄弟节点是黑色, 邻近侄子节点是黑色
                         return 9;
                     }
                 }
@@ -193,16 +246,17 @@ void Red_Black_Tree<T>::RemoveBalanceAdjust(Red_Black_Node<T>* node) {
         node->SetNewChild(node_child);
         break;
     case 2:
-        if (node->left->NIL) {
-            node->right->Set_Color(Color::BLACK);
-        }
-        else {
-            node->left->Set_Color(Color::BLACK);
-        }
+        node_child->Set_Color(Color::BLACK);
         node->SetNewChild(node_child);
+        if (this->root == node) {
+            this->root = node_child;
+            node_child->Set_Color(Color::BLACK);
+            node_child->parent = nullptr;
+        }
         break;
     case 3:
         this->root = node_child;
+        node_child->parent = nullptr;
         break;
     case 4:
         if (node == node->parent->left) {
@@ -211,7 +265,7 @@ void Red_Black_Tree<T>::RemoveBalanceAdjust(Red_Black_Node<T>* node) {
         else {
             temp_node = node->parent->RightRotate();
         }
-        if (node->parent->parent == nullptr) {
+        if (temp_node->parent == nullptr) {
             this->root = temp_node;
         }
         // 在树的结构中删除当前节点
@@ -243,7 +297,7 @@ void Red_Black_Tree<T>::RemoveBalanceAdjust(Red_Black_Node<T>* node) {
         else {
             temp_node = node->parent->RightRotate();
         }
-        if (node->parent->parent == nullptr) {
+        if (temp_node->parent == nullptr) {
             this->root = temp_node;
         }
         RemoveBalanceAdjust(node);
@@ -257,7 +311,7 @@ void Red_Black_Tree<T>::RemoveBalanceAdjust(Red_Black_Node<T>* node) {
         else {
             temp_node = node->parent->RightRotate();
         }
-        if (node->parent->parent == nullptr) {
+        if (temp_node->parent == nullptr) {
             this->root = temp_node;
         }
         // 在树的结构中删除当前节点
@@ -272,37 +326,39 @@ void Red_Black_Tree<T>::RemoveBalanceAdjust(Red_Black_Node<T>* node) {
             node->GetSibling()->RightRotate();
             temp_node = node->parent->LeftRotate();
         }
-        if (node->parent->parent == nullptr) {
+        if (temp_node->parent == nullptr) {
             this->root = temp_node;
         }
         // 在树的结构中删除当前节点
         node->SetNewChild(node_child);
         break;
     case 9:
+        temp_node = node->parent->parent;
+        // 首先将兄弟节点染为红色
         node->GetSibling()->Set_Color(Color::RED);
-        node->SetNewChild(node_child);
-        node->parent = node->parent->parent;
         // 如果当前节点是父节点的左子节点
         if (node == node->parent->left) {
+            // 如果当前节点左孩子节点为 NIL节点, NIL节点被忽略
             if (node->left->NIL) {
                 node->parent->left = node->right;
                 node->right->parent = node->parent;
                 // 此时还未修改node.parent
                 node->right = node->parent;
                 // 如果node节点的父节点是根节点
-                if (node->parent->parent == nullptr) {
+                if (temp_node == nullptr) {
                     node->parent = nullptr;
                     this->root = node;
                 }
                 else {
-                    node->parent = node->parent->parent;
-                    if (node->parent == node->parent->left) {
-                        node = node->parent->left;
+                    if (node->parent == temp_node->left) {
+                        temp_node->left = node;
                     }
                     else {
-                        node = node->parent->right;
+                        temp_node->right = node;
                     }
+                    node->parent = temp_node;
                 }
+                node->right->parent = node;
             }
             else {
                 // 如果当前节点的左节点为非 NIL 节点
@@ -316,14 +372,15 @@ void Red_Black_Tree<T>::RemoveBalanceAdjust(Red_Black_Node<T>* node) {
                     this->root = node;
                 }
                 else {
-                    node->parent = node->parent->parent;
-                    if (node->parent == node->parent->left) {
-                        node = node->parent->left;
+                    if (node->parent == temp_node->left) {
+                        temp_node->left = node;
                     }
                     else {
-                        node = node->parent->right;
+                        temp_node->right = node;
                     }
+                    node->parent = temp_node;
                 }
+                node->left->parent = node;
             }
         }
         // 如果当前节点是父节点的右子节点
@@ -340,14 +397,15 @@ void Red_Black_Tree<T>::RemoveBalanceAdjust(Red_Black_Node<T>* node) {
                     this->root = node;
                 }
                 else {
-                    node->parent = node->parent->parent;
-                    if (node->parent == node->parent->left) {
-                        node = node->parent->left;
+                    if (node->parent == temp_node->left) {
+                        temp_node->left = node;
                     }
                     else {
-                        node = node->parent->right;
+                        temp_node->right = node;
                     }
+                    node->parent = temp_node;
                 }
+                node->right->parent = node;
             }
             else {
                 // 如果当前节点的左节点为非 NIL 节点
@@ -361,16 +419,19 @@ void Red_Black_Tree<T>::RemoveBalanceAdjust(Red_Black_Node<T>* node) {
                     this->root = node;
                 }
                 else {
-                    node->parent = node->parent->parent;
-                    if (node->parent == node->parent->left) {
-                        node = node->parent->left;
+                    if (node->parent == temp_node->left) {
+                        temp_node->left = node;
                     }
                     else {
-                        node = node->parent->right;
+                        temp_node->right = node;
                     }
+                    node->parent = temp_node;
                 }
+                node->left->parent = node;
             }
         }
+        RemoveBalanceAdjust(node);
+        return;
         break;
 
     default:
@@ -390,6 +451,7 @@ void Red_Black_Tree<T>::erase(T value) {
     Red_Black_Node<T>* delete_node = nullptr;
     Red_Black_Node<T>* pre_delete_node = nullptr;
     Red_Black_Node<T>* find_node = this->root;
+    // 先找到需要删除的节点的位置
     while (find_node != nullptr && find_node->value != value && !find_node->NIL) {
         if (find_node->value < value) {
             find_node = find_node->right;
@@ -420,6 +482,9 @@ void Red_Black_Tree<T>::erase(T value) {
     return;
 }
 
-
+template class Red_Black_Tree<int>;
+template class Red_Black_Tree<short>;
+template class Red_Black_Tree<long>;
+template class Red_Black_Tree<long long>;
 
 

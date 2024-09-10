@@ -26,15 +26,33 @@ Red_Black_Node<T>* Red_Black_Node<T>::LeftRotate() {
         }
         temp->parent = temp_parent;
     }
+    else {
+        temp->parent = nullptr;
+    }
     return temp;
 }
 
 // 以当前节点为根节点进行右旋转
 template <class T>
 Red_Black_Node<T>* Red_Black_Node<T>::RightRotate() {
+    Red_Black_Node* temp_parent = this->parent;
     Red_Black_Node* temp = this->left;
-    this->left = this->left->right == nullptr ? nullptr : this->left->right;
+    this->left->right->parent = this;
+    this->left = this->left->right;
+    this->parent = temp;
     temp->right = this;
+    if (temp_parent != nullptr) {
+        if (this == temp_parent->left) {
+            temp_parent->left = temp;
+        }
+        else {
+            temp_parent->right = temp;
+        }
+        temp->parent = temp_parent;
+    }
+    else {
+        temp->parent = nullptr;
+    }
     return temp;
 }
 
@@ -61,7 +79,7 @@ void Red_Black_Node<T>::SetNewChild(Red_Black_Node* new_child) {
     else {
         this->parent->right = new_child;
     }
-    new_child->parent = this;
+    new_child->parent = this->parent;
 }
 
 template <class T>
@@ -113,5 +131,8 @@ Red_Black_Node<T>* Red_Black_Node<T>::GetFarNephew() {
     return nullptr;
 }
 
-
+template class Red_Black_Node<int>;
+template class Red_Black_Node<short>;
+template class Red_Black_Node<long>;
+template class Red_Black_Node<long long>;
 

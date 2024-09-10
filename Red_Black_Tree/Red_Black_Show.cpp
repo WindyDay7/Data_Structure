@@ -17,7 +17,12 @@ void Red_Black_Tree<T>::display(Red_Black_Node<T>* root) {
         q.pop();
         bool l = (p->left != nullptr);
         bool r = (p->right != nullptr);
-        x = p->x, y = p->y, sval = std::to_string(p->value);
+        if (p->node_color == Color::RED) {
+            x = p->x, y = p->y, sval = std::to_string(0 - p->value);
+        }
+        else {
+            x = p->x, y = p->y, sval = std::to_string(p->value);
+        }
         Canvas::put(2 * y, widthZoom * x, sval);
         if (l)
         {
@@ -28,8 +33,15 @@ void Red_Black_Tree<T>::display(Red_Black_Node<T>* root) {
         if (r)
         {
             q.push(p->right);
-            Canvas::put(2 * y + 1, widthZoom * x, '_',
-                widthZoom * (p->right->x - x) + std::to_string(p->right->value).length());
+            if (p->node_color == Color::RED) {
+                Canvas::put(2 * y + 1, widthZoom * x, '_',
+                    widthZoom * (p->right->x - x) + std::to_string(0 - p->right->value).length());
+            }
+            else {
+                Canvas::put(2 * y + 1, widthZoom * x, '_',
+                    widthZoom * (p->right->x - x) + std::to_string(p->right->value).length());
+            }
+
         }
         if (l || r)
             Canvas::put(2 * y + 1, widthZoom * x + sval.length() / 2, "|");
